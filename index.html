@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutor/Client Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'brand': {
+                            '50': '#f0f9ff',
+                            '100': '#e0f2fe',
+                            '200': '#bae6fd',
+                            '300': '#7dd3fc',
+                            '400': '#38bdf8',
+                            '500': '#0ea5e9',
+                            '600': '#0284c7',
+                            '700': '#0369a1',
+                            '800': '#075985',
+                            '900': '#0c4a6e',
+                            '950': '#082f49',
+                        },
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        @media (prefers-reduced-motion: reduce) {
+            * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+        .modal-backdrop { background: rgba(0,0,0,0.5); }
+        .drawer-enter { animation: slideIn 0.3s ease-out; }
+        .drawer-exit { animation: slideOut 0.3s ease-in forwards; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        @keyframes slideOut { from { transform: translateX(0); } to { transform: translateX(100%); } }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .prose { max-width: none; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+    <div id="app" class="min-h-screen flex">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-slate-800 text-slate-300 p-6 fixed lg:relative inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-40 flex flex-col space-y-8">
+            <h2 class="text-xl font-bold text-white mb-2">Filters & Stats</h2>
+            
+            <!-- Quick Stats -->
+            <div>
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Quick Stats</h3>
+                <div class="space-y-3">
+                    <div class="bg-slate-700/50 p-3 rounded-lg flex items-center space-x-3">
+                         <div class="bg-brand-500/10 text-brand-400 p-2 rounded-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" /></svg>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-white" id="totalStudentsCount">0</div>
+                            <div class="text-xs text-slate-400">Total Students</div>
+                        </div>
+                    </div>
+                     <div class="bg-slate-700/50 p-3 rounded-lg flex items-center space-x-3">
+                        <div class="bg-green-500/10 text-green-400 p-2 rounded-md">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-white" id="activeStudentsCount">0</div>
+                            <div class="text-xs text-slate-400">Active Students</div>
+                        </div>
+                    </div>
+                     <div class="bg-slate-700/50 p-3 rounded-lg flex items-center space-x-3">
+                        <div class="bg-purple-500/10 text-purple-400 p-2 rounded-md">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.5 2.5 0 00-1.168-.217c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5c.346 0 .68-.069.984-.2a2.502 2.502 0 001.184-2.083 2.5 2.5 0 00-1.168-.217V7.418z" /><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-white" id="monthlyIncome">$0</div>
+                            <div class="text-xs text-slate-400">This Month</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status Filter -->
+            <div>
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Status</h3>
+                <div class="space-y-2">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" class="statusFilter h-4 w-4 rounded border-slate-500 text-brand-500 focus:ring-brand-500" value="active" checked>
+                        <span>Active</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" class="statusFilter h-4 w-4 rounded border-slate-500 text-brand-500 focus:ring-brand-500" value="on_hold" checked>
+                        <span>On Hold</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" class="statusFilter h-4 w-4 rounded border-slate-500 text-brand-500 focus:ring-brand-500" value="inactive" checked>
+                        <span>Inactive</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Topic Filter -->
+            <div>
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Topics</h3>
+                <div id="topicFilters" class="flex flex-wrap gap-2"></div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col">
+            <!-- Top Bar -->
+            <header class="bg-white/80 backdrop-blur-lg border-b border-slate-200 px-4 sm:px-6 py-4 sticky top-0 z-30">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 sm:gap-6">
+                        <button id="menuBtn" class="lg:hidden p-2 text-slate-600 hover:text-brand-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                        </button>
+                        <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Tutor Manager</h1>
+                        <nav class="hidden md:flex items-center bg-slate-100 rounded-lg p-1">
+                            <button class="navBtn px-3 py-1.5 rounded-md text-sm font-medium" data-view="students">Students</button>
+                            <button class="navBtn px-3 py-1.5 rounded-md text-sm font-medium" data-view="dashboard">Dashboard</button>
+                        </nav>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="relative hidden sm:block">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <svg class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" /></svg>
+                            </div>
+                            <input type="text" id="searchInput" placeholder="Search..." class="px-3 py-2 pl-10 border border-slate-300 rounded-lg w-48 lg:w-64 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition">
+                        </div>
+                        <button id="addStudentBtn" class="bg-brand-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-brand-700 transition-colors flex items-center gap-2 text-sm sm:text-base">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 11a1 1 0 100-2h-1v-1a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1z" /></svg>
+                            <span class="hidden sm:inline">Add Student</span>
+                        </button>
+                         <button id="settingsBtn" class="p-2 text-slate-500 hover:bg-slate-100 hover:text-brand-600 rounded-lg transition-colors" title="Settings">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        </button>
+                        <button id="importExportBtn" class="hidden sm:block p-2 text-slate-500 hover:bg-slate-100 hover:text-brand-600 rounded-lg transition-colors" title="Import/Export">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                 <nav class="md:hidden flex items-center bg-slate-100 rounded-lg p-1 mt-4">
+                    <button class="navBtn flex-1 justify-center px-3 py-1.5 rounded-md text-sm font-medium" data-view="students">Students</button>
+                    <button class="navBtn flex-1 justify-center px-3 py-1.5 rounded-md text-sm font-medium" data-view="dashboard">Dashboard</button>
+                </nav>
+            </header>
+            
+            <!-- Content Area -->
+            <div class="flex-1 p-4 sm:p-6 overflow-auto">
+                <!-- Students View -->
+                <div id="studentsView" class="view">
+                    <div class="bg-white rounded-xl shadow-sm">
+                         <div class="flex flex-col sm:flex-row justify-between items-center p-4 border-b border-slate-200 gap-4">
+                            <h2 class="text-xl font-bold text-slate-700">All Students</h2>
+                            <div class="flex items-center gap-2">
+                                <label for="sortSelect" class="text-sm font-medium text-slate-600">Sort by:</label>
+                                <select id="sortSelect" class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500">
+                                    <option value="lastSession">Last Session</option>
+                                    <option value="name">Name</option>
+                                    <option value="hourlyRate">Hourly Rate</option>
+                                    <option value="status">Status</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-slate-50 text-slate-500">
+                                    <tr>
+                                        <th class="text-left font-semibold py-3 px-6">Name</th>
+                                        <th class="text-left font-semibold py-3 px-6 hidden lg:table-cell">Email</th>
+                                        <th class="text-left font-semibold py-3 px-6 hidden md:table-cell">Topics</th>
+                                        <th class="text-left font-semibold py-3 px-6">Status</th>
+                                        <th class="text-left font-semibold py-3 px-6 hidden lg:table-cell">Hourly</th>
+                                        <th class="text-left font-semibold py-3 px-6 hidden xl:table-cell">Sessions</th>
+                                        <th class="text-left font-semibold py-3 px-6 hidden xl:table-cell">Total Paid</th>
+                                        <th class="text-left font-semibold py-3 px-6 hidden md:table-cell">Last Session</th>
+                                        <th class="text-right font-semibold py-3 px-6">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTableBody" class="divide-y divide-slate-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dashboard View -->
+                <div id="dashboardView" class="view hidden">
+                    <!-- KPIs -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4">
+                            <div class="bg-blue-100 text-blue-600 p-3 rounded-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.124-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.124-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg></div>
+                            <div>
+                                <div class="text-3xl font-bold text-slate-800" id="kpiTotalStudents">0</div>
+                                <div class="text-sm text-slate-500 mt-1">Total Students</div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4">
+                            <div class="bg-green-100 text-green-600 p-3 rounded-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+                            <div>
+                                <div class="text-3xl font-bold text-slate-800" id="kpiActiveStudents">0</div>
+                                <div class="text-sm text-slate-500 mt-1">Active Students</div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4">
+                             <div class="bg-purple-100 text-purple-600 p-3 rounded-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                            <div>
+                                <div class="text-3xl font-bold text-slate-800" id="kpiUpcomingSessions">0</div>
+                                <div class="text-sm text-slate-500 mt-1">Next 7 Days</div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4">
+                            <div class="bg-yellow-100 text-yellow-600 p-3 rounded-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg></div>
+                            <div>
+                                <div class="text-3xl font-bold text-slate-800" id="kpiMonthlyIncome">$0</div>
+                                <div class="text-sm text-slate-500 mt-1">This Month Income</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts -->
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
+                        <div class="lg:col-span-3 bg-white rounded-xl shadow-sm p-6">
+                            <h3 class="text-lg font-bold mb-4 text-slate-700">Monthly Income</h3>
+                            <canvas id="incomeChart"></canvas>
+                        </div>
+                         <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+                            <h3 class="text-lg font-bold mb-4 text-slate-700">Active Students Trend</h3>
+                            <canvas id="activeStudentsChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Upcoming Sessions -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-bold mb-4 text-slate-700">Upcoming Sessions (Next 7 Days)</h3>
+                        <div id="upcomingSessions" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Modals -->
+    <div id="modals"></div>
+    
+    <script>
+    // Data Management
+    const { DateTime } = luxon;
+    
+    class DataStore {
+        constructor() {
+            this.data = {
+                students: [],
+                sessions: [],
+                notes: [],
+                settings: {
+                    homeTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    currency: 'USD',
+                    apiKey: '' // Gemini API Key
+                }
+            };
+            this.load();
+        }
+        
+        load() {
+            const stored = localStorage.getItem('tutorData');
+            if (stored) {
+                const parsedData = JSON.parse(stored);
+                this.data = { ...this.data, ...parsedData };
+                 if (!this.data.settings || !this.data.settings.hasOwnProperty('apiKey')) {
+                    this.data.settings = {
+                        homeTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        currency: 'USD',
+                        apiKey: ''
+                    };
+                }
+            } else {
+                this.seedData();
+            }
+        }
+        
+        save() {
+            localStorage.setItem('tutorData', JSON.stringify(this.data));
+            this.emit('dataChanged');
+        }
+        
+        seedData() {
+            const topics = ['Math', 'BPMN', 'Excel', 'Python', 'ML', 'PowerPoint', 'R', 'C#', 'Accounting'];
+            const firstNames = ['John', 'Sarah', 'Michael', 'Emma', 'David', 'Lisa', 'James', 'Anna', 'Robert', 'Maria'];
+            const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
+            
+            this.data.students = [];
+            this.data.sessions = [];
+            this.data.notes = [];
+
+            for (let i = 0; i < 10; i++) {
+                const student = {
+                    id: this.generateId(),
+                    firstName: firstNames[i],
+                    lastName: lastNames[i],
+                    email: `${firstNames[i].toLowerCase()}.${lastNames[i].toLowerCase()}@example.com`,
+                    topics: [topics[i % topics.length], topics[(i + 1) % topics.length]].filter((t, idx, arr) => arr.indexOf(t) === idx),
+                    status: ['active', 'active', 'active', 'on_hold', 'inactive'][i % 5],
+                    startDate: DateTime.now().minus({ days: Math.floor(Math.random() * 180) }).toISO(),
+                    lastSessionDate: null,
+                    hourlyRate: 30 + Math.floor(Math.random() * 50)
+                };
+                this.data.students.push(student);
+                
+                const sessionCount = Math.floor(Math.random() * 5) + 1;
+                for (let j = 0; j < sessionCount; j++) {
+                    const sessionDate = DateTime.now().minus({ days: Math.floor(Math.random() * 60) }).plus({ days: Math.floor(Math.random() * 14) - 7 });
+                    const session = {
+                        id: this.generateId(),
+                        studentId: student.id,
+                        startUTC: sessionDate.toISO(),
+                        durationMin: [30, 45, 60, 90][Math.floor(Math.random() * 4)],
+                        rateAtTime: student.hourlyRate,
+                        amount: 0,
+                        paymentStatus: Math.random() > 0.2 ? 'paid' : 'unpaid',
+                        note: j === 0 ? 'First session - introduction and assessment' : ''
+                    };
+                    session.amount = (session.durationMin * session.rateAtTime) / 60;
+                    this.data.sessions.push(session);
+                }
+                
+                if (Math.random() > 0.5) {
+                    this.data.notes.push({
+                        id: this.generateId(),
+                        studentId: student.id,
+                        createdAt: DateTime.now().minus({ days: Math.floor(Math.random() * 30) }).toISO(),
+                        title: 'Progress Update',
+                        body: `${student.firstName} is making good progress with ${student.topics[0]}.`,
+                        links: []
+                    });
+                }
+            }
+            
+            this.save();
+        }
+        
+        generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2);
+        }
+        
+        listeners = {};
+        on(event, callback) {
+            if (!this.listeners[event]) this.listeners[event] = [];
+            this.listeners[event].push(callback);
+        }
+        emit(event, data) {
+            if (this.listeners[event]) {
+                this.listeners[event].forEach(cb => cb(data));
+            }
+        }
+        
+        addStudent(student) {
+            student.id = this.generateId();
+            student.lastSessionDate = null;
+            this.data.students.push(student);
+            this.save();
+            return student;
+        }
+        
+        updateStudent(id, updates) {
+            const idx = this.data.students.findIndex(s => s.id === id);
+            if (idx !== -1) {
+                this.data.students[idx] = { ...this.data.students[idx], ...updates };
+                this.save();
+            }
+        }
+        
+        deleteStudent(id) {
+            this.data.students = this.data.students.filter(s => s.id !== id);
+            this.data.sessions = this.data.sessions.filter(s => s.studentId !== id);
+            this.data.notes = this.data.notes.filter(n => n.studentId !== id);
+            this.save();
+        }
+        
+        addSession(session) {
+            session.id = this.generateId();
+            this.data.sessions.push(session);
+            this.save();
+            return session;
+        }
+
+        addNote(note) {
+            note.id = this.generateId();
+            note.createdAt = DateTime.now().toISO();
+            this.data.notes.push(note);
+            this.save();
+            return note;
+        }
+        
+        deleteNote(id) {
+            this.data.notes = this.data.notes.filter(n => n.id !== id);
+            this.save();
+        }
+        
+        getStudentStats(studentId) {
+            const sessions = this.data.sessions.filter(s => s.studentId === studentId);
+            const paidSessions = sessions.filter(s => s.paymentStatus === 'paid');
+            const lastSession = sessions.length > 0 
+                ? sessions.reduce((latest, s) => DateTime.fromISO(s.startUTC) > DateTime.fromISO(latest.startUTC) ? s : latest)
+                : null;
+            
+            return {
+                sessionsCount: sessions.length,
+                totalPaid: paidSessions.reduce((sum, s) => sum + s.amount, 0),
+                lastSessionDate: lastSession ? lastSession.startUTC : null
+            };
+        }
+        
+        exportData() {
+            return JSON.stringify(this.data, null, 2);
+        }
+        
+        importData(jsonStr) {
+            try {
+                const imported = JSON.parse(jsonStr);
+                if (imported.students && imported.sessions && imported.notes && imported.settings) {
+                    this.data = imported;
+                    this.save();
+                    return true;
+                }
+                return false;
+            } catch (e) {
+                console.error('Import failed:', e);
+                return false;
+            }
+        }
+        
+        resetToSeed() {
+            localStorage.removeItem('tutorData');
+            this.seedData();
+        }
+    }
+    
+    // UI Manager
+    class UIManager {
+        constructor(store) {
+            this.store = store;
+            this.currentView = 'students';
+            this.filters = {
+                status: ['active', 'on_hold', 'inactive'],
+                topics: [],
+                search: ''
+            };
+            this.sortBy = 'lastSession';
+            this.init();
+        }
+        
+        init() {
+            this.bindEvents();
+            this.store.on('dataChanged', () => this.render());
+            this.render();
+        }
+        
+        bindEvents() {
+            document.querySelectorAll('.navBtn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    this.currentView = e.target.dataset.view;
+                    this.render();
+                });
+            });
+            
+            const searchInput = document.getElementById('searchInput');
+            let searchTimeout;
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    this.filters.search = e.target.value.toLowerCase();
+                    this.renderStudentsTable();
+                }, 300);
+            });
+            
+            document.getElementById('sortSelect').addEventListener('change', (e) => {
+                this.sortBy = e.target.value;
+                this.renderStudentsTable();
+            });
+            
+            document.querySelectorAll('.statusFilter').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    this.filters.status = Array.from(document.querySelectorAll('.statusFilter:checked')).map(cb => cb.value);
+                    this.renderStudentsTable();
+                });
+            });
+            
+            document.getElementById('addStudentBtn').addEventListener('click', () => this.openStudentModal());
+            document.getElementById('settingsBtn').addEventListener('click', () => this.openSettingsModal());
+            document.getElementById('importExportBtn').addEventListener('click', () => this.openImportExportModal());
+            document.getElementById('menuBtn').addEventListener('click', () => this.toggleSidebar());
+        }
+
+        toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+        
+        render() {
+            document.querySelectorAll('.navBtn').forEach(btn => {
+                btn.classList.toggle('bg-white', btn.dataset.view === this.currentView);
+                btn.classList.toggle('text-brand-600', btn.dataset.view === this.currentView);
+                btn.classList.toggle('shadow-sm', btn.dataset.view === this.currentView);
+                btn.classList.toggle('text-slate-600', btn.dataset.view !== this.currentView);
+            });
+            
+            document.querySelectorAll('.view').forEach(view => view.classList.add('hidden'));
+            document.getElementById(`${this.currentView}View`).classList.remove('hidden');
+            
+            if (this.currentView === 'students') {
+                this.renderStudentsView();
+            } else if (this.currentView === 'dashboard') {
+                this.renderDashboard();
+            }
+            
+            this.updateSidebarStats();
+            this.renderTopicFilters();
+        }
+        
+        renderStudentsView() {
+            this.renderStudentsTable();
+        }
+        
+        renderStudentsTable() {
+            const tbody = document.getElementById('studentsTableBody');
+            let students = [...this.store.data.students];
+            
+            students = students.filter(s => {
+                if (!this.filters.status.includes(s.status)) return false;
+                if (this.filters.topics.length > 0 && !s.topics.some(t => this.filters.topics.includes(t))) return false;
+                if (this.filters.search) {
+                    const searchStr = this.filters.search;
+                    return s.firstName.toLowerCase().includes(searchStr) ||
+                           s.lastName.toLowerCase().includes(searchStr) ||
+                           s.email.toLowerCase().includes(searchStr) ||
+                           s.topics.some(t => t.toLowerCase().includes(searchStr));
+                }
+                return true;
+            });
+            
+            students.sort((a, b) => {
+                const statsA = this.store.getStudentStats(a.id);
+                const statsB = this.store.getStudentStats(b.id);
+                
+                switch(this.sortBy) {
+                    case 'lastSession':
+                        const dateA = statsA.lastSessionDate ? DateTime.fromISO(statsA.lastSessionDate) : DateTime.fromISO('1970-01-01');
+                        const dateB = statsB.lastSessionDate ? DateTime.fromISO(statsB.lastSessionDate) : DateTime.fromISO('1970-01-01');
+                        return dateB - dateA;
+                    case 'name': return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+                    case 'hourlyRate': return b.hourlyRate - a.hourlyRate;
+                    case 'status':
+                        const statusOrder = { active: 0, on_hold: 1, inactive: 2 };
+                        return statusOrder[a.status] - statusOrder[b.status];
+                }
+            });
+            
+            if (students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-12 text-slate-500">No students found. Try adjusting your filters.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = students.map(student => {
+                const stats = this.store.getStudentStats(student.id);
+                const statusColors = {
+                    active: 'bg-green-100 text-green-700',
+                    on_hold: 'bg-yellow-100 text-yellow-700',
+                    inactive: 'bg-slate-100 text-slate-700'
+                };
+                
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="py-4 px-6 font-medium text-slate-900">${student.firstName} ${student.lastName}</td>
+                        <td class="py-4 px-6 text-slate-600 hidden lg:table-cell">${student.email}</td>
+                        <td class="py-4 px-6 hidden md:table-cell">
+                            <div class="flex flex-wrap gap-1">
+                                ${student.topics.map(t => `<span class="px-2 py-1 bg-brand-100 text-brand-700 text-xs rounded-full font-medium">${t}</span>`).join('')}
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full capitalize ${statusColors[student.status]}">${student.status.replace('_', ' ')}</span>
+                        </td>
+                        <td class="py-4 px-6 text-slate-600 hidden lg:table-cell">${this.formatCurrency(student.hourlyRate)}/hr</td>
+                        <td class="py-4 px-6 text-slate-600 hidden xl:table-cell">${stats.sessionsCount}</td>
+                        <td class="py-4 px-6 font-medium text-slate-900 hidden xl:table-cell">${this.formatCurrency(stats.totalPaid)}</td>
+                        <td class="py-4 px-6 text-slate-600 hidden md:table-cell">${stats.lastSessionDate ? this.formatDate(stats.lastSessionDate) : '-'}</td>
+                        <td class="py-4 px-6 text-right">
+                            <button onclick="ui.openStudentDetails('${student.id}')" class="text-brand-600 hover:text-brand-800 font-medium">View</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        renderDashboard() {
+            const now = DateTime.now();
+            const students = this.store.data.students;
+            const sessions = this.store.data.sessions;
+            
+            document.getElementById('kpiTotalStudents').textContent = students.length;
+            document.getElementById('kpiActiveStudents').textContent = students.filter(s => s.status === 'active').length;
+            
+            const upcomingSessions = sessions.filter(s => {
+                const sessionDate = DateTime.fromISO(s.startUTC);
+                return sessionDate > now && sessionDate < now.plus({ days: 7 });
+            });
+            document.getElementById('kpiUpcomingSessions').textContent = upcomingSessions.length;
+            
+            const monthStart = now.startOf('month');
+            const monthEnd = now.endOf('month');
+            const monthlyIncome = sessions
+                .filter(s => s.paymentStatus === 'paid' && DateTime.fromISO(s.startUTC) >= monthStart && DateTime.fromISO(s.startUTC) <= monthEnd)
+                .reduce((sum, s) => sum + s.amount, 0);
+            document.getElementById('kpiMonthlyIncome').textContent = this.formatCurrency(monthlyIncome);
+            
+            const upcomingDiv = document.getElementById('upcomingSessions');
+            const tz = this.store.data.settings.homeTimezone;
+            upcomingDiv.innerHTML = upcomingSessions
+                .sort((a, b) => DateTime.fromISO(a.startUTC) - DateTime.fromISO(b.startUTC))
+                .map(session => {
+                    const student = students.find(s => s.id === session.studentId);
+                    if(!student) return '';
+                    const sessionTime = DateTime.fromISO(session.startUTC).setZone(tz);
+                    const paymentStatusClasses = session.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700';
+                    return `
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition">
+                            <div>
+                                <div class="font-medium text-slate-800">${student.firstName} ${student.lastName}</div>
+                                <div class="text-sm text-slate-500">${sessionTime.toFormat('EEE, MMM dd, yyyy - h:mm a')}</div>
+                            </div>
+                            <div class="text-right flex items-center gap-4">
+                                <div class="text-sm text-slate-600">${session.durationMin} min</div>
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full capitalize ${paymentStatusClasses}">
+                                    ${session.paymentStatus}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }).join('') || '<p class="text-slate-500 text-center py-4">No upcoming sessions in the next 7 days.</p>';
+            
+            this.renderCharts();
+        }
+        
+        renderCharts() {
+            Chart.defaults.font.family = 'Inter';
+            Chart.defaults.color = '#64748b';
+            const now = DateTime.now();
+            
+            const months = Array.from({length: 6}, (_, i) => now.minus({ months: 5 - i }));
+            const monthLabels = months.map(m => m.toFormat('MMM yyyy'));
+            
+            const activeStudentCounts = months.map(month => {
+                const monthEnd = month.endOf('month');
+                return this.store.data.students.filter(s => s.status === 'active' && DateTime.fromISO(s.startDate) <= monthEnd).length;
+            });
+
+            const monthlyIncomes = months.map(month => {
+                const monthStart = month.startOf('month');
+                const monthEnd = month.endOf('month');
+                return this.store.data.sessions
+                    .filter(s => s.paymentStatus === 'paid' && DateTime.fromISO(s.startUTC) >= monthStart && DateTime.fromISO(s.startUTC) <= monthEnd)
+                    .reduce((sum, s) => sum + s.amount, 0);
+            });
+            
+            const activeCtx = document.getElementById('activeStudentsChart');
+            if(window.activeStudentsChartInstance) window.activeStudentsChartInstance.destroy();
+            window.activeStudentsChartInstance = new Chart(activeCtx, {
+                type: 'line',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Active Students',
+                        data: activeStudentCounts,
+                        borderColor: 'rgb(129, 140, 248)',
+                        backgroundColor: 'rgba(129, 140, 248, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgb(129, 140, 248)',
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            });
+            
+            const incomeCtx = document.getElementById('incomeChart');
+            if(window.incomeChartInstance) window.incomeChartInstance.destroy();
+            window.incomeChartInstance = new Chart(incomeCtx, {
+                type: 'bar',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Income',
+                        data: monthlyIncomes,
+                        backgroundColor: 'rgba(2, 132, 199, 0.8)',
+                        borderRadius: 4,
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: (value) => this.formatCurrency(value) } } } }
+            });
+        }
+        
+        updateSidebarStats() {
+            const students = this.store.data.students;
+            const sessions = this.store.data.sessions;
+            const now = DateTime.now();
+            const monthStart = now.startOf('month');
+            const monthEnd = now.endOf('month');
+            
+            document.getElementById('totalStudentsCount').textContent = students.length;
+            document.getElementById('activeStudentsCount').textContent = students.filter(s => s.status === 'active').length;
+            
+            const monthlyIncome = sessions
+                .filter(s => s.paymentStatus === 'paid' && DateTime.fromISO(s.startUTC) >= monthStart && DateTime.fromISO(s.startUTC) <= monthEnd)
+                .reduce((sum, s) => sum + s.amount, 0);
+            document.getElementById('monthlyIncome').textContent = this.formatCurrency(monthlyIncome);
+        }
+        
+        renderTopicFilters() {
+            const allTopics = [...new Set(this.store.data.students.flatMap(s => s.topics))].sort();
+            const container = document.getElementById('topicFilters');
+            
+            container.innerHTML = allTopics.map(topic => `
+                <button class="topicFilter px-3 py-1 text-sm rounded-full border transition-colors ${
+                    this.filters.topics.includes(topic) 
+                        ? 'bg-brand-500 text-white border-brand-500' 
+                        : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'
+                }" data-topic="${topic}">${topic}</button>
+            `).join('');
+            
+            container.querySelectorAll('.topicFilter').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const topic = e.target.dataset.topic;
+                    if (this.filters.topics.includes(topic)) {
+                        this.filters.topics = this.filters.topics.filter(t => t !== topic);
+                    } else {
+                        this.filters.topics.push(topic);
+                    }
+                    this.render();
+                });
+            });
+        }
+        
+        openStudentModal(studentId = null) {
+            const student = studentId ? this.store.data.students.find(s => s.id === studentId) : null;
+            const isEdit = !!student;
+            
+            const modal = this.createModal(`
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold mb-6 text-slate-800">${isEdit ? 'Edit' : 'Add'} Student</h2>
+                    <form id="studentForm" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-slate-600">First Name</label>
+                                <input type="text" name="firstName" value="${student?.firstName || ''}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-slate-600">Last Name</label>
+                                <input type="text" name="lastName" value="${student?.lastName || ''}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 text-slate-600">Email</label>
+                            <input type="email" name="email" value="${student?.email || ''}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 text-slate-600">Hourly Rate</label>
+                            <input type="number" name="hourlyRate" value="${student?.hourlyRate || 50}" min="0" step="1" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 text-slate-600">Status</label>
+                            <select name="status" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition">
+                                <option value="active" ${student?.status === 'active' ? 'selected' : ''}>Active</option>
+                                <option value="on_hold" ${student?.status === 'on_hold' ? 'selected' : ''}>On Hold</option>
+                                <option value="inactive" ${student?.status === 'inactive' ? 'selected' : ''}>Inactive</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 text-slate-600">Topics</label>
+                            <input type="text" id="topicInput" placeholder="Add topic and press Enter" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition">
+                            <div id="topicsList" class="flex flex-wrap gap-2 mt-2">
+                                ${(student?.topics || []).map(t => `<span class="px-3 py-1 bg-brand-100 text-brand-700 rounded-full text-sm flex items-center gap-1 font-medium">${t}<button type="button" class="removeTopic hover:text-brand-900 font-bold" data-topic="${t}">×</button></span>`).join('')}
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-4 pt-4 border-t border-slate-200">
+                            <button type="button" class="closeModal px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
+                            <button type="submit" class="px-6 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors">${isEdit ? 'Update' : 'Add'} Student</button>
+                        </div>
+                    </form>
+                </div>
+            `);
+            
+            const topics = student?.topics || [];
+            const topicInput = modal.querySelector('#topicInput');
+            const topicsList = modal.querySelector('#topicsList');
+            
+            const renderTopics = () => {
+                topicsList.innerHTML = topics.map(t => `<span class="px-3 py-1 bg-brand-100 text-brand-700 rounded-full text-sm flex items-center gap-1 font-medium">${t}<button type="button" class="removeTopic hover:text-brand-900 font-bold" data-topic="${t}">×</button></span>`).join('');
+            };
+            
+            topicInput.addEventListener('keypress', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const topic = topicInput.value.trim();
+                    if (topic && !topics.includes(topic)) {
+                        topics.push(topic);
+                        renderTopics();
+                        topicInput.value = '';
+                    }
+                }
+            });
+            
+            topicsList.addEventListener('click', e => {
+                if (e.target.classList.contains('removeTopic')) {
+                    const topic = e.target.dataset.topic;
+                    topics.splice(topics.indexOf(topic), 1);
+                    renderTopics();
+                }
+            });
+            
+            modal.querySelector('#studentForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const studentData = {
+                    firstName: formData.get('firstName'),
+                    lastName: formData.get('lastName'),
+                    email: formData.get('email'),
+                    hourlyRate: parseFloat(formData.get('hourlyRate')),
+                    status: formData.get('status'),
+                    topics: topics,
+                    startDate: student?.startDate || DateTime.now().toISO()
+                };
+                
+                if (isEdit) {
+                    this.store.updateStudent(studentId, studentData);
+                } else {
+                    this.store.addStudent(studentData);
+                }
+                
+                this.closeModal();
+            });
+        }
+        
+        openStudentDetails(studentId) {
+            const student = this.store.data.students.find(s => s.id === studentId);
+            if (!student) return;
+            
+            const stats = this.store.getStudentStats(studentId);
+            const sessions = this.store.data.sessions.filter(s => s.studentId === studentId);
+            const notes = this.store.data.notes.filter(n => n.studentId === studentId);
+            
+            const modal = this.createModal(`
+                <div class="flex flex-col h-full">
+                    <div class="p-4 sm:p-6 border-b border-slate-200">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h2 class="text-xl sm:text-2xl font-bold text-slate-900">${student.firstName} ${student.lastName}</h2>
+                                <p class="text-sm sm:text-base text-slate-500">${student.email}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="ui.openStudentModal('${studentId}')" class="px-3 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium transition-colors">Edit</button>
+                                <button onclick="ui.deleteStudent('${studentId}')" class="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium transition-colors">Delete</button>
+                                <button class="closeModal p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">&times;</button>
+                           </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+                            <div class="bg-slate-50 p-4 rounded-lg"><div class="text-xs text-slate-500">Total Sessions</div><div class="text-2xl font-bold text-slate-800">${stats.sessionsCount}</div></div>
+                            <div class="bg-slate-50 p-4 rounded-lg"><div class="text-xs text-slate-500">Total Paid</div><div class="text-2xl font-bold text-slate-800">${this.formatCurrency(stats.totalPaid)}</div></div>
+                            <div class="bg-slate-50 p-4 rounded-lg"><div class="text-xs text-slate-500">Hourly Rate</div><div class="text-2xl font-bold text-slate-800">${this.formatCurrency(student.hourlyRate)}/hr</div></div>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4 sm:p-6">
+                        <div class="border-b border-slate-200 mb-6">
+                            <nav class="flex gap-1 -mb-px">
+                                <button class="tabBtn px-4 py-3 border-b-2 border-brand-500 text-brand-600 font-medium" data-tab="sessions">Sessions</button>
+                                <button class="tabBtn px-4 py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 font-medium" data-tab="notes">Notes</button>
+                                <button class="tabBtn px-4 py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 font-medium" data-tab="communications">Communications</button>
+                            </nav>
+                        </div>
+                        <div id="sessionsTab" class="tabContent space-y-4">
+                            <div class="flex justify-between items-center"><h3 class="text-lg font-bold text-slate-800">Session History</h3><button onclick="ui.openSessionModal('${studentId}')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium transition-colors">Add Session</button></div>
+                            <div class="space-y-3">${sessions.sort((a, b) => DateTime.fromISO(b.startUTC) - DateTime.fromISO(a.startUTC)).map(s => this.renderSessionCard(s, student)).join('') || '<p class="text-slate-500 text-center py-4">No sessions recorded.</p>'}</div>
+                        </div>
+                        <div id="notesTab" class="tabContent hidden space-y-4">
+                            <div class="flex justify-between items-center"><h3 class="text-lg font-bold text-slate-800">Notes</h3><button onclick="ui.openNoteModal('${studentId}')" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-medium transition-colors">Add Note</button></div>
+                            <div class="space-y-3">${notes.sort((a, b) => DateTime.fromISO(b.createdAt) - DateTime.fromISO(a.createdAt)).map(n => this.renderNoteCard(n)).join('') || '<p class="text-slate-500 text-center py-4">No notes created.</p>'}</div>
+                        </div>
+                        <div id="communicationsTab" class="tabContent hidden space-y-4">
+                            ${this.renderCommunicationsTab(student)}
+                        </div>
+                    </div>
+                </div>
+            `, 'drawer');
+            
+            modal.querySelectorAll('.tabBtn').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    modal.querySelectorAll('.tabBtn').forEach(b => {
+                        b.classList.remove('border-brand-500', 'text-brand-600');
+                        b.classList.add('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-300');
+                    });
+                    e.target.classList.add('border-brand-500', 'text-brand-600');
+                    e.target.classList.remove('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-300');
+                    
+                    modal.querySelectorAll('.tabContent').forEach(c => c.classList.add('hidden'));
+                    modal.querySelector(`#${e.target.dataset.tab}Tab`).classList.remove('hidden');
+                });
+            });
+
+            // Bind events for communication tab
+            this.bindCommunicationTabEvents(studentId);
+        }
+        
+        renderSessionCard(session, student) {
+            const tz = this.store.data.settings.homeTimezone;
+            const sessionTime = DateTime.fromISO(session.startUTC).setZone(tz);
+            const endTime = sessionTime.plus({ minutes: session.durationMin });
+            const paymentStatusClasses = session.paymentStatus === 'paid' ? 'border-green-200 bg-green-50 text-green-700' : 'border-orange-200 bg-orange-50 text-orange-700';
+            return `<div class="border border-slate-200 rounded-lg p-4 bg-white hover:shadow-md transition-shadow"><div class="flex justify-between items-start"><div class="flex-1"><div class="font-semibold text-slate-800">${sessionTime.toFormat('EEE, MMM dd, yyyy')}</div><div class="text-sm text-slate-500">${sessionTime.toFormat('h:mm a')} - ${endTime.toFormat('h:mm a')} (${session.durationMin} min)</div>${session.note ? `<div class="text-sm text-slate-600 mt-2 p-2 bg-slate-50 rounded prose">${session.note.replace(/\n/g, '<br>')}</div>` : ''}</div><div class="text-right space-y-2"><div class="font-semibold text-lg text-slate-800">${this.formatCurrency(session.amount)}</div><div class="text-xs font-semibold px-2 py-1 rounded-full capitalize border ${paymentStatusClasses}">${session.paymentStatus}</div></div></div><div class="mt-2 text-right"><button onclick="ui.createGoogleCalendarEvent('${session.id}', '${student.id}')" class="text-xs text-brand-600 hover:text-brand-800 font-medium">Add to Calendar</button></div></div>`;
+        }
+        
+        renderNoteCard(note) {
+            const noteTime = DateTime.fromISO(note.createdAt).setZone(this.store.data.settings.homeTimezone);
+            return `<div class="border border-slate-200 rounded-lg p-4 bg-white hover:shadow-md transition-shadow"><div class="flex justify-between items-start"><div class="flex-1"><div class="font-semibold text-slate-800">${note.title}</div><div class="text-sm text-slate-500 mb-2">${noteTime.toFormat('MMM dd, yyyy - h:mm a')}</div><div class="text-sm text-slate-700 prose">${note.body.replace(/\n/g, '<br>')}</div>${note.links?.length ? `<div class="mt-2 space-y-1">${note.links.map(link => `<a href="${link}" target="_blank" class="text-brand-600 hover:underline text-sm flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>${link}</a>`).join('')}</div>` : ''}</div><button onclick="ui.showConfirm('Delete Note?', 'Are you sure you want to delete this note?', () => { ui.store.deleteNote('${note.id}'); ui.openStudentDetails('${note.studentId}'); })" class="text-red-500 hover:text-red-700 text-sm font-medium">Delete</button></div></div>`;
+        }
+        
+        openSessionModal(studentId) {
+            const student = this.store.data.students.find(s => s.id === studentId);
+            const now = DateTime.now().setZone(this.store.data.settings.homeTimezone);
+            const modal = this.createModal(`<div class="p-6"><h2 class="text-2xl font-bold mb-6 text-slate-800">Add Session for ${student.firstName}</h2><form id="sessionForm" class="space-y-4"><div><label class="block text-sm font-medium mb-1 text-slate-600">Date & Time (${this.store.data.settings.homeTimezone})</label><input type="datetime-local" name="startTime" value="${now.toFormat('yyyy-MM-dd\'T\'HH:mm')}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition"></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium mb-1 text-slate-600">Duration</label><select name="durationMin" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition"><option value="30">30 min</option><option value="45">45 min</option><option value="60" selected>60 min</option><option value="90">90 min</option><option value="120">120 min</option></select></div><div><label class="block text-sm font-medium mb-1 text-slate-600">Payment</label><select name="paymentStatus" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition"><option value="unpaid">Unpaid</option><option value="paid">Paid</option></select></div></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium mb-1 text-slate-600">Rate/Hour</label><input type="number" name="rateAtTime" value="${student.hourlyRate}" min="0" step="1" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition bg-slate-50"></div><div><label class="block text-sm font-medium mb-1 text-slate-600">Amount</label><input type="number" name="amount" value="${student.hourlyRate}" min="0" step="0.01" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition bg-slate-50"></div></div><div><label class="block text-sm font-medium mb-1 text-slate-600">Note (optional)</label><textarea name="note" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition"></textarea></div><div class="flex justify-end gap-4 pt-4 border-t border-slate-200"><button type="button" class="closeModal px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button><button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">Add Session</button></div></form></div>`);
+            
+            const durationSelect = modal.querySelector('[name="durationMin"]');
+            const rateInput = modal.querySelector('[name="rateAtTime"]');
+            const amountInput = modal.querySelector('[name="amount"]');
+            
+            const calculateAmount = () => { amountInput.value = ((parseFloat(durationSelect.value) || 0) * (parseFloat(rateInput.value) || 0) / 60).toFixed(2); };
+            durationSelect.addEventListener('change', calculateAmount);
+            rateInput.addEventListener('input', calculateAmount);
+            
+            modal.querySelector('#sessionForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                this.store.addSession({
+                    studentId: studentId,
+                    startUTC: DateTime.fromISO(formData.get('startTime'), { zone: this.store.data.settings.homeTimezone }).toUTC().toISO(),
+                    durationMin: parseInt(formData.get('durationMin')),
+                    rateAtTime: parseFloat(formData.get('rateAtTime')),
+                    amount: parseFloat(formData.get('amount')),
+                    paymentStatus: formData.get('paymentStatus'),
+                    note: formData.get('note')
+                });
+                this.closeModal();
+                this.openStudentDetails(studentId);
+            });
+        }
+        
+        openNoteModal(studentId) {
+            const student = this.store.data.students.find(s => s.id === studentId);
+            const modal = this.createModal(`<div class="p-6"><h2 class="text-2xl font-bold mb-6 text-slate-800">Add Note for ${student.firstName}</h2><form id="noteForm" class="space-y-4"><div><label class="block text-sm font-medium mb-1 text-slate-600">Title</label><input type="text" name="title" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition"></div><div><div class="flex justify-between items-center mb-1"><label class="block text-sm font-medium text-slate-600">Note</label><button type="button" id="generateNoteBtn" class="text-xs font-semibold text-brand-600 hover:text-brand-800 flex items-center gap-1">✨ Generate with AI</button></div><textarea name="body" id="noteBody" rows="6" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition"></textarea></div><div><label class="block text-sm font-medium mb-1 text-slate-600">Links (optional, one per line)</label><textarea name="links" rows="2" placeholder="https://example.com" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition"></textarea></div><div class="flex justify-end gap-4 pt-4 border-t border-slate-200"><button type="button" class="closeModal px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button><button type="submit" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Add Note</button></div></form></div>`);
+            
+            modal.querySelector('#generateNoteBtn').addEventListener('click', async () => {
+                const keywords = prompt("Enter keywords for the session note (e.g., 'covered linear equations, struggled with slope-intercept form, next time review graphing')");
+                if (keywords) {
+                    const button = modal.querySelector('#generateNoteBtn');
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating...';
+                    button.disabled = true;
+
+                    const prompt = `As a professional tutor, write a concise session note based on these keywords: "${keywords}". The note should be well-structured. Use markdown for formatting. Include sections for 'Topics Covered', 'Student Progress', and 'Next Steps'.`;
+                    const result = await this.generateWithGemini(prompt);
+                    
+                    if (result) {
+                        modal.querySelector('#noteBody').value = result;
+                    }
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                }
+            });
+
+            modal.querySelector('#noteForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                this.store.addNote({
+                    studentId: studentId,
+                    title: formData.get('title'),
+                    body: formData.get('body'),
+                    links: formData.get('links').split('\n').filter(l => l.trim()).map(l => l.trim())
+                });
+                this.closeModal();
+                this.openStudentDetails(studentId);
+            });
+        }
+        
+        openSettingsModal() {
+            const settings = this.store.data.settings;
+            const timezones = Intl.supportedValuesOf('timeZone');
+            const modal = this.createModal(`<div class="p-6"><h2 class="text-2xl font-bold mb-6 text-slate-800">Settings</h2><form id="settingsForm" class="space-y-4"><div><label class="block text-sm font-medium mb-1 text-slate-600">Home Timezone</label><select name="homeTimezone" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500">${timezones.map(tz => `<option value="${tz}" ${settings.homeTimezone === tz ? 'selected' : ''}>${tz}</option>`).join('')}</select></div><div><label class="block text-sm font-medium mb-1 text-slate-600">Currency</label><select name="currency" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500"><option value="USD" ${settings.currency === 'USD' ? 'selected' : ''}>USD ($)</option><option value="EUR" ${settings.currency === 'EUR' ? 'selected' : ''}>EUR (€)</option><option value="GBP" ${settings.currency === 'GBP' ? 'selected' : ''}>GBP (£)</option><option value="CAD" ${settings.currency === 'CAD' ? 'selected' : ''}>CAD (C$)</option><option value="AUD" ${settings.currency === 'AUD' ? 'selected' : ''}>AUD (A$)</option></select></div><div class="pt-4 border-t border-slate-200">
+            <label class="block text-sm font-medium mb-1 text-slate-600">Gemini API Key</label>
+            <input type="password" name="apiKey" value="${settings.apiKey || ''}" placeholder="Enter your Gemini API Key" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition">
+            <p class="text-xs text-slate-500 mt-1">Your API key is stored locally in your browser.</p>
+            </div><div class="pt-4 border-t border-slate-200"><button type="button" id="resetDataBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Reset to Demo Data</button></div><div class="flex justify-end gap-4 mt-6"><button type="button" class="closeModal px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button><button type="submit" class="px-6 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700">Save Settings</button></div></form></div>`);
+            
+            modal.querySelector('#resetDataBtn').addEventListener('click', () => this.resetData());
+            modal.querySelector('#settingsForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                this.store.data.settings = { homeTimezone: formData.get('homeTimezone'), currency: formData.get('currency'), apiKey: formData.get('apiKey') };
+                this.store.save();
+                this.closeModal();
+            });
+        }
+        
+        openImportExportModal() {
+            const modal = this.createModal(`<div class="p-6"><h2 class="text-2xl font-bold mb-6 text-slate-800">Import/Export Data</h2><div class="mb-6"><h3 class="text-lg font-bold mb-2">Export Data</h3><p class="text-sm text-slate-600 mb-3">Download all your data as a JSON file.</p><button id="exportBtn" class="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700">Export JSON</button></div><div class="border-t pt-6 border-slate-200"><h3 class="text-lg font-bold mb-2">Import Data</h3><p class="text-sm text-slate-600 mb-3">Upload a JSON file. <strong class="text-red-600">This will overwrite current data.</strong></p><input type="file" id="importFile" accept=".json" class="mb-3 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"><button id="importBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Import JSON</button></div><div class="flex justify-end mt-6"><button type="button" class="closeModal px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Close</button></div></div>`);
+            
+            modal.querySelector('#exportBtn').addEventListener('click', () => {
+                const dataStr = this.store.exportData();
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `tutor-data-${DateTime.now().toFormat('yyyy-MM-dd')}.json`;
+                a.click();
+                URL.revokeObjectURL(a.href);
+            });
+            
+            modal.querySelector('#importBtn').addEventListener('click', () => {
+                const file = modal.querySelector('#importFile').files[0];
+                if (!file) { this.showAlert('Please select a file.', 'error'); return; }
+                
+                const reader = new FileReader();
+                reader.onload = e => {
+                    if (this.store.importData(e.target.result)) {
+                        this.showAlert('Data imported successfully!');
+                        this.closeModal();
+                    } else {
+                        this.showAlert('Import failed. Please check the file format.', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            });
+        }
+        
+        createGoogleCalendarEvent(sessionId, studentId) {
+            const session = this.store.data.sessions.find(s => s.id === sessionId);
+            const student = this.store.data.students.find(s => s.id === studentId);
+            if (!session || !student) return;
+            
+            const startTime = DateTime.fromISO(session.startUTC);
+            const endTime = startTime.plus({ minutes: session.durationMin });
+            
+            const url = new URL('https://calendar.google.com/calendar/render');
+            url.searchParams.append('action', 'TEMPLATE');
+            url.searchParams.append('text', `Tutoring: ${student.firstName} ${student.lastName}`);
+            url.searchParams.append('details', `Topics: ${student.topics.join(', ')}\nRate: ${this.formatCurrency(session.rateAtTime)}/hr`);
+            url.searchParams.append('dates', `${startTime.toUTC().toFormat("yyyyMMdd'T'HHmmss'Z'")}/${endTime.toUTC().toFormat("yyyyMMdd'T'HHmmss'Z'")}`);
+            
+            window.open(url.toString(), '_blank');
+        }
+
+        createModal(content, type = 'modal') {
+            this.closeModal();
+            const container = document.getElementById('modals');
+            const modalWrapper = document.createElement('div');
+            
+            modalWrapper.className = type === 'drawer'
+                ? 'fixed inset-0 z-50 flex justify-end'
+                : 'fixed inset-0 z-50 flex items-center justify-center p-4';
+            
+            modalWrapper.innerHTML = `<div class="modal-backdrop absolute inset-0" onclick="ui.closeModal()"></div><div class="${type === 'drawer' ? 'relative bg-slate-50 h-full w-full max-w-2xl shadow-xl drawer-enter' : 'relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col'}">${content}</div>`;
+            
+            container.appendChild(modalWrapper);
+            
+            const handleEsc = e => { if(e.key === 'Escape') this.closeModal(); };
+            document.addEventListener('keydown', handleEsc, { once: true });
+
+            modalWrapper.querySelectorAll('.closeModal').forEach(btn => btn.addEventListener('click', () => this.closeModal()));
+            
+            const firstFocusable = modalWrapper.querySelector('input, select, textarea, button');
+            if (firstFocusable) firstFocusable.focus();
+            
+            return modalWrapper;
+        }
+        
+        closeModal() {
+            const container = document.getElementById('modals');
+            const drawer = container.querySelector('.drawer-enter');
+            if (drawer) {
+                drawer.classList.remove('drawer-enter');
+                drawer.classList.add('drawer-exit');
+                setTimeout(() => { container.innerHTML = ''; }, 300);
+            } else {
+                container.innerHTML = '';
+            }
+        }
+        
+        deleteStudent(studentId) {
+            this.showConfirm('Delete Student?', 'This will permanently delete the student and all their associated sessions and notes. This action cannot be undone.', () => {
+                this.store.deleteStudent(studentId);
+                this.closeModal();
+                this.showAlert('Student deleted.');
+            });
+        }
+        
+        resetData() {
+            this.showConfirm('Reset Data?', 'Are you sure you want to reset to demo data? This will delete all current data.', () => {
+                this.store.resetToSeed();
+                this.closeModal();
+                this.showAlert('Data has been reset.');
+            });
+        }
+
+        showAlert(message, type = 'success') {
+            const alertColors = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `fixed bottom-5 right-5 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 ${alertColors} z-50`;
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+            setTimeout(() => {
+                alertDiv.classList.remove('translate-y-20', 'opacity-0');
+            }, 10);
+            setTimeout(() => {
+                alertDiv.classList.add('translate-y-20', 'opacity-0');
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 3000);
+        }
+
+        showConfirm(title, message, onConfirm) {
+            const modal = this.createModal(`<div class="p-6"><h3 class="text-lg font-bold text-slate-800">${title}</h3><p class="text-slate-600 mt-2 mb-6">${message}</p><div class="flex justify-end gap-3"><button id="cancelConfirm" class="px-4 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg">Cancel</button><button id="doConfirm" class="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg">Confirm</button></div></div>`);
+            modal.querySelector('#cancelConfirm').addEventListener('click', () => this.closeModal());
+            modal.querySelector('#doConfirm').addEventListener('click', () => {
+                onConfirm();
+                this.closeModal();
+            });
+        }
+
+        async generateWithGemini(prompt) {
+            const apiKey = this.store.data.settings.apiKey || "";
+            if (!apiKey) {
+                this.showAlert('Please set your Gemini API Key in Settings.', 'error');
+                return null;
+            }
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    console.error('Gemini API Error:', error);
+                    this.showAlert(`API Error: ${error.error.message}`, 'error');
+                    return null;
+                }
+
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                this.showAlert('Failed to connect to the AI service.', 'error');
+                return null;
+            }
+        }
+
+        renderCommunicationsTab(student) {
+            return `
+                <h3 class="text-lg font-bold text-slate-800 mb-4">✨ AI Email Drafter</h3>
+                <div class="space-y-2 mb-4">
+                    <button data-email-type="welcome" class="generate-email-btn w-full text-left px-4 py-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 transition">Draft Welcome Email</button>
+                    <button data-email-type="reminder" class="generate-email-btn w-full text-left px-4 py-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 transition">Draft Session Reminder</button>
+                    <button data-email-type="progress" class="generate-email-btn w-full text-left px-4 py-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 transition">Draft Progress Update</button>
+                </div>
+                <div class="relative">
+                     <textarea id="emailDraft" rows="12" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 transition" placeholder="Generated email will appear here..."></textarea>
+                     <button id="copyEmailBtn" class="absolute top-2 right-2 px-2 py-1 bg-slate-200 text-slate-600 hover:bg-slate-300 rounded text-xs font-medium">Copy</button>
+                </div>
+            `;
+        }
+
+        bindCommunicationTabEvents(studentId) {
+            const student = this.store.data.students.find(s => s.id === studentId);
+            const emailDraftArea = document.getElementById('emailDraft');
+            
+            document.querySelectorAll('.generate-email-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const emailType = e.target.dataset.emailType;
+                    let prompt = '';
+                    
+                    const originalText = e.target.innerHTML;
+                    e.target.innerHTML = '<svg class="animate-spin h-5 w-5 inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating...';
+                    e.target.disabled = true;
+
+                    switch(emailType) {
+                        case 'welcome':
+                            prompt = `Draft a friendly and professional welcome email to a new tutoring student named ${student.firstName}. Mention that I'm excited to work with them on ${student.topics.join(', ')}. Keep it concise.`;
+                            break;
+                        case 'reminder':
+                            const upcomingSessions = this.store.data.sessions.filter(s => s.studentId === studentId && DateTime.fromISO(s.startUTC) > DateTime.now()).sort((a,b) => DateTime.fromISO(a.startUTC) - DateTime.fromISO(b.startUTC));
+                            if (upcomingSessions.length > 0) {
+                                const nextSession = upcomingSessions[0];
+                                const sessionTime = DateTime.fromISO(nextSession.startUTC).setZone(this.store.data.settings.homeTimezone).toFormat('cccc, LLLL d \'at\' h:mm a');
+                                prompt = `Draft a friendly reminder email for ${student.firstName}'s upcoming tutoring session on ${sessionTime}.`;
+                            } else {
+                                this.showAlert('No upcoming sessions found for this student.', 'error');
+                                e.target.innerHTML = originalText;
+                                e.target.disabled = false;
+                                return;
+                            }
+                            break;
+                        case 'progress':
+                            const recentNotes = this.store.data.notes.filter(n => n.studentId === studentId).slice(0, 3).map(n => `Title: ${n.title}\n${n.body}`).join('\n\n');
+                            if (recentNotes) {
+                                prompt = `Draft a professional progress update email for ${student.firstName}'s parent. Summarize the student's recent work based on these notes:\n\n${recentNotes}\n\nHighlight progress and mention next steps.`;
+                            } else {
+                                this.showAlert('No recent notes found to generate a progress update.', 'error');
+                                e.target.innerHTML = originalText;
+                                e.target.disabled = false;
+                                return;
+                            }
+                            break;
+                    }
+
+                    const result = await this.generateWithGemini(prompt);
+                    if (result) {
+                        emailDraftArea.value = result;
+                    }
+                    e.target.innerHTML = originalText;
+                    e.target.disabled = false;
+                });
+            });
+
+            document.getElementById('copyEmailBtn').addEventListener('click', () => {
+                emailDraftArea.select();
+                document.execCommand('copy');
+                this.showAlert('Email draft copied to clipboard!');
+            });
+        }
+        
+        formatCurrency(amount) {
+            try { return new Intl.NumberFormat('en-US', { style: 'currency', currency: this.store.data.settings.currency }).format(amount); }
+            catch(e) { return `$${(amount || 0).toFixed(2)}`; }
+        }
+        
+        formatDate(isoDate) {
+            return DateTime.fromISO(isoDate).setZone(this.store.data.settings.homeTimezone).toFormat('MMM dd, yyyy');
+        }
+    }
+    
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+        const store = new DataStore();
+        const ui = new UIManager(store);
+        window.ui = ui;
+    });
+    </script>
+</body>
+</html>
